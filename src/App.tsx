@@ -9,42 +9,48 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalRecords, setTotalRecords] = useState<number>(0);
+  const [rowsPerPage] = useState<number>(12);
+
+  const loadArtworks = async (page: number) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetchArtworks(page);
+
+      setArtworks(response.data);
+      setTotalRecords(response.pagination.total);
+      setCurrentPage(response.pagination.current_page);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load artworks");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadArtworks = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetchArtworks(1);
-
-        setArtworks(response.data);
-        setTotalRecords(response.pagination.total);
-        setCurrentPage(response.pagination.current_page);
-
-        console.log("Fetched artworks:", response);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load artworks");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadArtworks();
+    loadArtworks(1);
   }, []);
+
+  const handlePageChange = (event: { first: number; rows: number }) => {
+    const page = event.first / event.rows + 1;
+    loadArtworks(page);
+  };
 
   return (
     <div style={{ padding: "2rem" }}>
       <h1>Artworks Table</h1>
 
-      {loading && <p>Loading...</p>}
-
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {!loading && !error && (
-        <ArtworkTable artworks={artworks} loading={loading} />
-      )}
+      <ArtworkTable
+        artworks={artworks}
+        loading={loading}
+        totalRecords={totalRecords}
+        rowsPerPage={rowsPerPage}
+        onPageChange={handlePageChange}
+      />
     </div>
   );
 }
