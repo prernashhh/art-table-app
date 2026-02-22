@@ -11,13 +11,14 @@ function App() {
   const [totalRecords, setTotalRecords] = useState<number>(0);
   const [rowsPerPage] = useState<number>(12);
 
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+
   const loadArtworks = async (page: number) => {
     setLoading(true);
     setError(null);
 
     try {
       const response = await fetchArtworks(page);
-
       setArtworks(response.data);
       setTotalRecords(response.pagination.total);
       setCurrentPage(response.pagination.current_page);
@@ -29,6 +30,7 @@ function App() {
     }
   };
 
+
   useEffect(() => {
     loadArtworks(1);
   }, []);
@@ -36,6 +38,21 @@ function App() {
   const handlePageChange = (event: { first: number; rows: number }) => {
     const page = event.first / event.rows + 1;
     loadArtworks(page);
+  };
+
+
+  const handleSelectionChange = (selectedRows: Artwork[]) => {
+    const updated = new Set(selectedIds);
+
+    artworks.forEach((art) => {
+      updated.delete(art.id);
+    });
+
+    selectedRows.forEach((art) => {
+      updated.add(art.id);
+    });
+
+    setSelectedIds(updated);
   };
 
   return (
@@ -49,6 +66,8 @@ function App() {
         loading={loading}
         totalRecords={totalRecords}
         rowsPerPage={rowsPerPage}
+        selectedIds={selectedIds}
+        onSelectionChange={handleSelectionChange}
         onPageChange={handlePageChange}
       />
     </div>
