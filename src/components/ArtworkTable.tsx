@@ -8,6 +8,8 @@ interface ArtworkTableProps {
   totalRecords: number;
   rowsPerPage: number;
   selectedIds: Set<number>;
+  customSelectLimit: number | null;
+  currentOffset: number;
   onSelectionChange: (selected: Artwork[]) => void;
   onPageChange: (event: { first: number; rows: number }) => void;
 }
@@ -18,12 +20,19 @@ export const ArtworkTable = ({
   totalRecords,
   rowsPerPage,
   selectedIds,
+  customSelectLimit,
+  currentOffset,
   onSelectionChange,
   onPageChange,
 }: ArtworkTableProps) => {
-  const selectedRows = artworks.filter((art) =>
-    selectedIds.has(art.id)
-  );
+  const selectedRows = artworks.filter((art, index) => {
+    if (customSelectLimit !== null) {
+      const globalIndex = currentOffset + index + 1;
+      return globalIndex <= customSelectLimit;
+    }
+
+    return selectedIds.has(art.id);
+  });
 
   return (
     <DataTable
@@ -36,7 +45,7 @@ export const ArtworkTable = ({
       onPage={onPageChange}
       dataKey="id"
       selection={selectedRows}
-      onSelectionChange={(e) => onSelectionChange(e.value)}
+      onSelectionChange={(e) => onSelectionChange(e.value as Artwork[])}
       selectionMode="multiple"
       tableStyle={{ minWidth: "50rem" }}
     >

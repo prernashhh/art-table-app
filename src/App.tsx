@@ -13,6 +13,8 @@ function App() {
   const [rowsPerPage] = useState<number>(12);
 
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [customSelectLimit, setCustomSelectLimit] = useState<number | null>(null);
+  const [currentOffset, setCurrentOffset] = useState<number>(0);
 
   const overlayRef = useRef<OverlayPanel>(null);
   const [selectCount, setSelectCount] = useState<string>("");
@@ -38,22 +40,27 @@ function App() {
   }, []);
 
   const handlePageChange = (event: { first: number; rows: number }) => {
+    setCurrentOffset(event.first);
     const page = event.first / event.rows + 1;
     loadArtworks(page);
   };
 
   const handleSelectionChange = (selectedRows: Artwork[]) => {
-    const updated = new Set(selectedIds);
+    setSelectedIds((prev) => {
+      const updated = new Set(prev);
 
-    artworks.forEach((art) => {
-      updated.delete(art.id);
+      artworks.forEach((art) => {
+        updated.delete(art.id);
+      });
+
+      selectedRows.forEach((art) => {
+        updated.add(art.id);
+      });
+
+      return updated;
     });
 
-    selectedRows.forEach((art) => {
-      updated.add(art.id);
-    });
-
-    setSelectedIds(updated);
+    setCustomSelectLimit(null);
   };
 
   const handleCustomSelection = () => {
@@ -64,15 +71,9 @@ function App() {
       return;
     }
 
-    const updated = new Set(selectedIds);
+    const capped = Math.min(count, totalRecords);
+    setCustomSelectLimit(capped);
 
-    const rowsToSelect = artworks.slice(0, count);
-
-    rowsToSelect.forEach((art) => {
-      updated.add(art.id);
-    });
-
-    setSelectedIds(updated);
     setSelectCount("");
     overlayRef.current?.hide();
   };
@@ -109,6 +110,8 @@ function App() {
         totalRecords={totalRecords}
         rowsPerPage={rowsPerPage}
         selectedIds={selectedIds}
+        customSelectLimit={customSelectLimit}
+        currentOffset={currentOffset}
         onSelectionChange={handleSelectionChange}
         onPageChange={handlePageChange}
       />
