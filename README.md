@@ -6,10 +6,6 @@ A production-ready React application that displays artwork data from the Art Ins
 
 https://artworks-table-prerna.netlify.app/
 
-## GitHub Repository
-
-https://github.com/prernashhh/art-table-app
-
 ---
 
 ## Features
