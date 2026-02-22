@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Artwork } from "./types/artwork";
 import { fetchArtworks } from "./services/api";
+import { ArtworkTable } from "./components/ArtworkTable";
 
 function App() {
   const [artworks, setArtworks] = useState<Artwork[]>([]);
@@ -42,11 +43,7 @@ function App() {
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       {!loading && !error && (
-        <div>
-          <p>Loaded {artworks.length} artworks</p>
-          <p>Total Records: {totalRecords}</p>
-          <p>Current Page: {currentPage}</p>
-        </div>
+        <ArtworkTable artworks={artworks} loading={loading} />
       )}
     </div>
   );
